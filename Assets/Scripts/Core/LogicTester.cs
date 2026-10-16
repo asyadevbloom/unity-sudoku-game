@@ -1,5 +1,6 @@
 using Sudoku.Core;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LogicTester : MonoBehaviour
@@ -9,7 +10,10 @@ public class LogicTester : MonoBehaviour
         //TestSolverOnEmptyBoard();
         //TestSolverOnKnownPuzzle();
         //TestSolverOnUnsolvableBoard();
-        TestCountSolutions();
+        //TestCountSolutions();
+        //TestShuffle();
+        //TestFillCompletely();
+        TestGenerator();
     }
 
     private void TestSolverOnEmptyBoard()
@@ -133,5 +137,69 @@ public class LogicTester : MonoBehaviour
         var solver3 = new SudokuSolver(badBoard);
         int count3 = solver3.CountSolutions(2);
         Debug.Log($"Invalid board: {count3} (expected: 0)");
+    }
+
+    private void TestShuffle()
+    {
+        Debug.Log("=== Test: Shuffle ===");
+
+        // Классический тест — перемешать числа 1..10 несколько раз
+        var generator = new SudokuGenerator();
+
+        for (int run = 0; run < 3; run++)
+        {
+            var list = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+            // Shuffle — приватный. Чтобы проверить, сделай его временно public
+            // Или добавь публичный тестовый метод в SudokuGenerator:
+            // public void TestShufflePublic<T>(IList<T> list) => Shuffle(list);
+
+            // Но проще — временно сделай Shuffle public:
+            //generator.Shuffle(list);  // если сделала public
+
+            Debug.Log(string.Join(", ", list));
+        }
+    }
+
+    private void TestFillCompletely()
+    {
+        Debug.Log("=== Test: FillCompletely ===");
+        var generator = new SudokuGenerator();
+
+        // Нужно временно сделать FillCompletely public
+        // Или добавить публичный метод обёртку
+        var board = new SudokuBoard();
+        //generator.FillCompletely(board);   // ← временно public
+
+        PrintBoard(board);
+
+        // Проверяем, что доска валидна
+        Debug.Log($"IsConsistent: {board.IsConsistent()} (expected: True)");
+
+        // И что решений ровно одно (это готовая судоку)
+        var solver = new SudokuSolver(board);
+        Debug.Log($"Solutions: {solver.CountSolutions(2)} (expected: 1)");
+    }
+
+    private void TestGenerator()
+    {
+        Debug.Log("=== Test: Generator ===");
+        var generator = new SudokuGenerator();
+
+        foreach (var difficulty in new[] { Difficulty.Easy, Difficulty.Medium, Difficulty.Hard })
+        {
+            var board = generator.Generate(difficulty);
+
+            int emptyCount = 0;
+            for (int r = 0; r < SudokuBoard.Size; r++)
+                for (int c = 0; c < SudokuBoard.Size; c++)
+                    if (board.IsEmpty(r, c)) emptyCount++;
+
+            var solver = new SudokuSolver(board);
+            int solutions = solver.CountSolutions(2);
+
+            Debug.Log($"{difficulty}: {emptyCount} empty cells, {solutions} solution(s)");
+            PrintBoard(board);
+        }
     }
 }
