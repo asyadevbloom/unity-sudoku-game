@@ -8,7 +8,8 @@ public class LogicTester : MonoBehaviour
     {
         //TestSolverOnEmptyBoard();
         //TestSolverOnKnownPuzzle();
-        TestSolverOnUnsolvableBoard();
+        //TestSolverOnUnsolvableBoard();
+        TestCountSolutions();
     }
 
     private void TestSolverOnEmptyBoard()
@@ -94,5 +95,43 @@ public class LogicTester : MonoBehaviour
             sb.AppendLine();
         }
         Debug.Log(sb.ToString());
+    }
+
+    private void TestCountSolutions()
+    {
+        Debug.Log("=== Test 4: CountSolutions ===");
+
+        // Случай 1: пустая доска — решений МНОГО
+        var emptyBoard = new SudokuBoard();
+        var solver1 = new SudokuSolver(emptyBoard);
+        int count1 = solver1.CountSolutions(2);
+        Debug.Log($"Empty board: {count1} (expected: 2)");
+
+        // Случай 2: реальная головоломка — решение ЕДИНСТВЕННОЕ
+        int[,] puzzle =
+        {
+        { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
+        { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
+        { 0, 9, 8, 0, 0, 0, 0, 6, 0 },
+        { 8, 0, 0, 0, 6, 0, 0, 0, 3 },
+        { 4, 0, 0, 8, 0, 3, 0, 0, 1 },
+        { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
+        { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
+        { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
+        { 0, 0, 0, 0, 8, 0, 0, 7, 9 },
+    };
+        var puzzleBoard = new SudokuBoard();
+        puzzleBoard.LoadFrom(puzzle);
+        var solver2 = new SudokuSolver(puzzleBoard);
+        int count2 = solver2.CountSolutions(2);
+        Debug.Log($"Known puzzle: {count2} (expected: 1)");
+
+        // Случай 3: невалидная доска — решений НОЛЬ
+        var badBoard = new SudokuBoard();
+        badBoard.SetCell(0, 0, 5);
+        badBoard.SetCell(0, 1, 5);  // конфликт
+        var solver3 = new SudokuSolver(badBoard);
+        int count3 = solver3.CountSolutions(2);
+        Debug.Log($"Invalid board: {count3} (expected: 0)");
     }
 }

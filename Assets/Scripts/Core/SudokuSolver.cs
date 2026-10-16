@@ -7,6 +7,8 @@ namespace Sudoku.Core
         private readonly SudokuBoard _board;
         private int _callCount = 0;
         private const int MaxCalls = 1_000_000;
+        private int _solutionCount;
+        private int _solutionLimit;
 
         public SudokuSolver(SudokuBoard board)
         {
@@ -60,6 +62,65 @@ namespace Sudoku.Core
             }
 
             return false;
+        }
+
+        public int CountSolutions(int limit = 2)
+        {
+            if (!_board.IsConsistent())
+                return 0;
+
+            _solutionCount = 0;
+            _solutionLimit = limit;
+
+            CountSolutionsRecursive(0, 0);
+
+            return _solutionCount;
+        }
+
+        private void CountSolutionsRecursive(int row, int column)
+        {
+            // return if we've hit the limit
+            if (_solutionCount >= _solutionLimit)
+                return;
+
+            // reached past the last row, found a solution
+            if (row == SudokuBoard.Size)
+            {
+                _solutionCount++;
+                return;
+            }
+
+            // end of current row — move to next
+            if (column == SudokuBoard.Size)
+            {
+                CountSolutionsRecursive(row + 1, 0);
+                return;
+            }
+
+            // cell already filled — skip
+            if (!_board.IsEmpty(row, column))
+            {
+                CountSolutionsRecursive(row, column + 1);
+                return;
+            }
+
+            // try each number 1-9
+            for (int value = 1; value <= SudokuBoard.Size; value++)
+            {
+                if (!_board.IsValidPlacement(row, column, value))
+                    continue;
+
+                _board.SetCell(row, column, value);
+
+                CountSolutionsRecursive(row, column + 1);
+
+                // undo
+                _board.SetCell(row, column, 0);
+
+                // stop early if we've hit the limit
+                if (_solutionCount >= _solutionLimit)
+                    return;
+            }
         }
     }
 }
