@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,36 @@ namespace Sudoku.UI
     {
         [SerializeField] private TextMeshProUGUI _valueText;
         [SerializeField] private Image _background;
+        [SerializeField] private Button _button;
+
+        private int _row;
+        private int _column;
+
+        public int Row
+        {
+            get { return _row; }
+        }
+
+        public int Column
+        {
+            get { return _column; }
+        }
+
+        public event Action<CellView> OnCellClicked;
+
+        private void Awake()
+        {
+            _button.onClick.AddListener(HandleClick);
+        }
+        
+        /// <summary>
+        /// sets the coordinates of this cell on the board.
+        /// </summary>
+        public void Init(int row, int column)
+        {
+            _row = row;
+            _column = column;
+        }
 
         /// <summary>
         /// sets the number to display
@@ -25,6 +56,19 @@ namespace Sudoku.UI
             {
                 _valueText.text = value.ToString();
             }
+        }
+
+        /// <summary>
+        /// highlights the cell when selected
+        /// </summary>
+        public void SetSelected(bool isSelected)
+        {
+            _background.color = isSelected ? Color.cyan : Color.white;
+        }
+
+        private void HandleClick()
+        {
+            OnCellClicked?.Invoke(this);
         }
     }
 }
