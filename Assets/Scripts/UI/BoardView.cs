@@ -19,11 +19,13 @@ namespace Sudoku.UI
         private SudokuBoard _board;
         private CellView _selectedCell;
         private CellView[,] _cellViews = new CellView[SudokuBoard.Size, SudokuBoard.Size];
+        private int[,] _initialPuzzle;
 
         private void Start()
         {
             _generator = new SudokuGenerator();
             _board = _generator.Generate(GameSettings.SelectedDifficulty);
+            _initialPuzzle = _board.Clone();
 
             SpawnCells();
         }
@@ -136,6 +138,41 @@ namespace Sudoku.UI
             }
 
             return _board.IsConsistent();
+        }
+
+        public void ClearSelectedCell()
+        {
+            if (_selectedCell != null)
+            {
+                _board.SetCell(_selectedCell.Row, _selectedCell.Column, 0);
+                _selectedCell.SetValue(0);
+                _selectedCell.SetError(false);
+            }
+        }
+
+        public void RestartBoard()
+        {
+            _board.LoadFrom(_initialPuzzle);
+
+            for (int row = 0; row < SudokuBoard.Size; row++)
+            {
+                for (int column = 0; column < SudokuBoard.Size; column++)
+                {
+                    int value = _board.GetCell(row, column);
+                    _cellViews[row, column].SetValue(value);
+
+                    if (value != 0)
+                    {
+                        _cellViews[row, column].LockCell();
+                    }
+                    else
+                    {
+                        _cellViews[row, column].UnlockCell();
+                    }
+
+                    _cellViews[row, column].SetError(false);
+                }
+            }
         }
     }
 }
