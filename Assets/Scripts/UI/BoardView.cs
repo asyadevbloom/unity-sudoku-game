@@ -1,4 +1,6 @@
 using Sudoku.Core;
+using TMPro;
+using UnityEditor.Tilemaps;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
 
@@ -16,6 +18,7 @@ namespace Sudoku.UI
         private SudokuGenerator _generator;
         private SudokuBoard _board;
         private CellView _selectedCell;
+        private CellView[,] _cellViews = new CellView[SudokuBoard.Size, SudokuBoard.Size];
 
         private void Start()
         {
@@ -32,18 +35,19 @@ namespace Sudoku.UI
                 for (int column = 0; column < SudokuBoard.Size; column++)
                 {
                     CellView cell = Instantiate(_cellPrefab, transform);
+                    _cellViews[row, column] = cell;
 
                     cell.Init(row, column);
 
                     int value = _board.GetCell(row, column);
-                    
+
+                    cell.SetValue(value);
+
                     // if the cell already has a number, lock it
                     if (value != 0)
                     {
                         cell.LockCell();
                     }
-
-                    cell.SetValue(value);
 
                     cell.OnCellClicked += HandleCellClicked;
                 }
@@ -72,7 +76,14 @@ namespace Sudoku.UI
 
                 bool isError = HasConflict(_selectedCell.Row, _selectedCell.Column, value);
                 _selectedCell.SetError(isError);
+
+                if (CheckWin())
+                {
+                    Debug.Log("Victory!");
+                }
             }
+
+            
         }
 
         /// <summary>
@@ -112,6 +123,19 @@ namespace Sudoku.UI
             }
 
             return false;
+        }
+
+        private bool CheckWin()
+        {
+            for (int row = 0; row < SudokuBoard.Size; row++)
+            {
+                for (int column = 0; column < SudokuBoard.Size; column++)
+                {
+                    if (_board.GetCell(row, column) == 0) return false;
+                }
+            }
+
+            return _board.IsConsistent();
         }
     }
 }

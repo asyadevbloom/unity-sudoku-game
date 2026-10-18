@@ -46,6 +46,10 @@ namespace Sudoku.Core
             return _cells[row, column] == 0;
         }
 
+        /// <summary>
+        /// checks whether the current board state violates any Sudoku rules,
+        /// returns false if any number appears twice in the same row, column, or 3x3 box
+        /// </summary>
         public bool IsConsistent()
         {
             for (int row = 0; row < Size; row++)

@@ -13,6 +13,8 @@ namespace Sudoku.UI
         [SerializeField] private TextMeshProUGUI _valueText;
         [SerializeField] private Image _background;
         [SerializeField] private Button _button;
+        [SerializeField] private Color _playerColor = Color.blue;
+        [SerializeField] private Color _givenColor = Color.black;
 
         private int _row;
         private int _column;
@@ -56,6 +58,8 @@ namespace Sudoku.UI
             {
                 _valueText.text = value.ToString();
             }
+
+            _valueText.color = _playerColor;
         }
 
         /// <summary>
@@ -77,6 +81,13 @@ namespace Sudoku.UI
         public void LockCell()
         {
             _button.interactable = false;
+            _valueText.color = _givenColor;
+        }
+
+        public void UnlockCell()
+        {
+            _button.interactable = true;
+            _valueText.color = _playerColor; //return blue color for the player
         }
 
         public void SetError (bool hasError)
