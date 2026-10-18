@@ -70,5 +70,25 @@ namespace Sudoku.UI
         {
             OnCellClicked?.Invoke(this);
         }
+
+        /// <summary>
+        /// lock the cell so the player cannot click it or change it
+        /// </summary> 
+        public void LockCell()
+        {
+            _button.interactable = false;
+        }
+
+        public void SetError (bool hasError)
+        {
+            if (hasError == true)
+            {
+                _background.color = Color.red;
+            }
+            else
+            {
+                _background.color = Color.white;
+            }
+        }
     }
 }
