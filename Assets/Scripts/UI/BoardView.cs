@@ -13,7 +13,7 @@ namespace Sudoku.UI
     public class BoardView : MonoBehaviour
     {
         [SerializeField] private CellView _cellPrefab;
-        [SerializeField] private Difficulty _difficulty = Difficulty.Easy;
+        //[SerializeField] private Difficulty _difficulty = Difficulty.Easy;
 
         private SudokuGenerator _generator;
         private SudokuBoard _board;
@@ -23,7 +23,7 @@ namespace Sudoku.UI
         private void Start()
         {
             _generator = new SudokuGenerator();
-            _board = _generator.Generate(_difficulty);
+            _board = _generator.Generate(GameSettings.SelectedDifficulty);
 
             SpawnCells();
         }
