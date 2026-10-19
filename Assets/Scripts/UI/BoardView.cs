@@ -191,5 +191,41 @@ namespace Sudoku.UI
                 }
             }
         }
+
+        /// <summary>
+        /// fills the board with correct answers, leaving one cell empty
+        /// (used for testing the win condition)
+        /// </summary>
+        public void DebugFillBoard()
+        {
+            bool emptyCellLeft = false;
+
+            for (int row = 0; row < SudokuBoard.Size; row++)
+            {
+                for (int column = 0; column < SudokuBoard.Size; column++)
+                {
+                    // only fill cells that were originally empty (can be changed)
+                    if (_initialPuzzle[row, column] == 0)
+                    {
+                        if (!emptyCellLeft)
+                        {
+                            // leave this one empty for the player
+                            _board.SetCell(row, column, 0);
+                            _cellViews[row, column].SetValue(0);
+                            _cellViews[row, column].UnlockCell();
+                            emptyCellLeft = true;
+                        }
+                        else
+                        {
+                            // fill with the correct answer
+                            int correctValue = _solution.GetCell(row, column);
+                            _board.SetCell(row, column, correctValue);
+                            _cellViews[row, column].SetValue(correctValue);
+                            _cellViews[row, column].LockCell();
+                        }
+                    }
+                }
+            }
+        }
     }
 }
