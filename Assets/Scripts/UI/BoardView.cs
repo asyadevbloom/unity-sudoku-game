@@ -20,13 +20,26 @@ namespace Sudoku.UI
         private CellView _selectedCell;
         private CellView[,] _cellViews = new CellView[SudokuBoard.Size, SudokuBoard.Size];
         private int[,] _initialPuzzle;
+        private SudokuBoard _solution;
 
         private void Start()
         {
             _generator = new SudokuGenerator();
+            
+            // generate a new puzzle with empty sells
             _board = _generator.Generate(GameSettings.SelectedDifficulty);
+            
+            // save a pristine copy of the initial puzzle (used for restarting level)
             _initialPuzzle = _board.Clone();
 
+            // create a separate board and solve it to get the correct answers
+            // (used for strict error checking when the player enters a number
+            _solution = new SudokuBoard();
+            _solution.LoadFrom(_initialPuzzle);
+            var solver = new SudokuSolver(_solution);
+            solver.Solve();
+
+            // spawn the visual cells on the screen
             SpawnCells();
         }
 
@@ -76,7 +89,11 @@ namespace Sudoku.UI
                 //set the number to display
                 _selectedCell.SetValue(value);
 
-                bool isError = HasConflict(_selectedCell.Row, _selectedCell.Column, value);
+                //bool isError = HasConflict(_selectedCell.Row, _selectedCell.Column, value);
+                //_selectedCell.SetError(isError);
+
+                int correctValue = _solution.GetCell(_selectedCell.Row, _selectedCell.Column);
+                bool isError = (value != 0 && value != correctValue);
                 _selectedCell.SetError(isError);
 
                 if (CheckWin())
@@ -91,41 +108,41 @@ namespace Sudoku.UI
         /// <summary>
         /// checks if the placed value violates any Sudoku rules
         /// </summary>
-        private bool HasConflict(int row, int column, int value)
-        {
-            // if value is 0 (we erased it), it's never a conflict
-            if (value == 0) return false;
+        //private bool HasConflict(int row, int column, int value)
+        //{
+        //    // if value is 0 (we erased it), it's never a conflict
+        //    if (value == 0) return false;
 
-            for (int i = 0; i < SudokuBoard.Size; i++)
-            {
-                // check row and column (skip the cell we just changed)
-                if (i != column && _board.GetCell(row, i) == value)
-                {
-                    return true;
-                }
-                if (i != row && _board.GetCell(i, column) == value)
-                {
-                    return true;
-                }
-            }
+        //    for (int i = 0; i < SudokuBoard.Size; i++)
+        //    {
+        //        // check row and column (skip the cell we just changed)
+        //        if (i != column && _board.GetCell(row, i) == value)
+        //        {
+        //            return true;
+        //        }
+        //        if (i != row && _board.GetCell(i, column) == value)
+        //        {
+        //            return true;
+        //        }
+        //    }
 
-            // check 3x3 box
-            int boxRow = row - row % SudokuBoard.BoxSize;
-            int boxCol = column - column % SudokuBoard.BoxSize;
+        //    // check 3x3 box
+        //    int boxRow = row - row % SudokuBoard.BoxSize;
+        //    int boxCol = column - column % SudokuBoard.BoxSize;
 
-            for (int r = boxRow; r < boxRow + SudokuBoard.BoxSize; r++)
-            {
-                for (int c = boxCol; c < boxCol + SudokuBoard.BoxSize; c++)
-                {
-                    // skip the cell we just changed
-                    if (r == row && c == column) continue;
+        //    for (int r = boxRow; r < boxRow + SudokuBoard.BoxSize; r++)
+        //    {
+        //        for (int c = boxCol; c < boxCol + SudokuBoard.BoxSize; c++)
+        //        {
+        //            // skip the cell we just changed
+        //            if (r == row && c == column) continue;
 
-                    if (_board.GetCell(r, c) == value) return true;
-                }
-            }
+        //            if (_board.GetCell(r, c) == value) return true;
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool CheckWin()
         {
