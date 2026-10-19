@@ -13,7 +13,7 @@ namespace Sudoku.UI
     public class BoardView : MonoBehaviour
     {
         [SerializeField] private CellView _cellPrefab;
-        //[SerializeField] private Difficulty _difficulty = Difficulty.Easy;
+        [SerializeField] private GameObject _winPanel;
 
         private SudokuGenerator _generator;
         private SudokuBoard _board;
@@ -81,7 +81,7 @@ namespace Sudoku.UI
 
                 if (CheckWin())
                 {
-                    Debug.Log("Victory!");
+                    _winPanel.SetActive(true);
                 }
             }
 
