@@ -13,6 +13,7 @@ namespace Sudoku.UI
         [SerializeField] private CellView _cellPrefab;
         [SerializeField] private GameObject _winPanel;
         [SerializeField] private GameTimer _timer;
+        [SerializeField] private ColorTheme _theme;
 
         private SudokuGenerator _generator;
         private SudokuBoard _board;
@@ -52,6 +53,7 @@ namespace Sudoku.UI
                 for (int column = 0; column < SudokuBoard.Size; column++)
                 {
                     CellView cell = Instantiate(_cellPrefab, transform);
+                    cell.SetTheme(_theme);
                     _cellViews[row, column] = cell;
 
                     cell.Init(row, column);
@@ -65,6 +67,8 @@ namespace Sudoku.UI
                     {
                         cell.LockCell();
                     }
+
+                    cell.SetSelected(false);
 
                     cell.OnCellClicked += HandleCellClicked;
                 }
@@ -127,9 +131,7 @@ namespace Sudoku.UI
                     _timer.StopTimer();
                     _winPanel.SetActive(true);
                 }
-            }
-
-            
+            } 
         }
 
         /// <summary>
@@ -211,6 +213,7 @@ namespace Sudoku.UI
                     }
 
                     _cellViews[row, column].SetError(false);
+                    _cellViews[row, column].SetSelected(false);
                 }
             }
         }

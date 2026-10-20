@@ -348,6 +348,7 @@ MonoBehaviour:
   _cellPrefab: {fileID: 2358873211675264031, guid: 083f77bf6d98cd74d98159287e5945ec, type: 3}
   _winPanel: {fileID: 1022341939}
   _timer: {fileID: 1972738099}
+  _theme: {fileID: 11400000, guid: c93f8b864c684524093d78a7377d3776, type: 2}
 --- !u!114 &148935971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1563,6 +1564,7 @@ GameObject:
   - component: {fileID: 809651210}
   - component: {fileID: 809651209}
   - component: {fileID: 809651208}
+  - component: {fileID: 809651211}
   m_Layer: 5
   m_Name: Btn_Notes
   m_TagString: Untagged
@@ -1633,7 +1635,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 809651209}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 809651211}
+        m_TargetAssemblyTypeName: Sudoku.UI.NotesButton, Assembly-CSharp
+        m_MethodName: ToggleNotes
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &809651209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1672,6 +1686,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 809651206}
   m_CullTransparentMesh: 1
+--- !u!114 &809651211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809651206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecff896ba846dc84d923d8df212a7425, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sudoku.UI.NotesButton
+  _boardView: {fileID: 148935970}
+  _buttonImage: {fileID: 809651209}
 --- !u!1 &846788434
 GameObject:
   m_ObjectHideFlags: 0

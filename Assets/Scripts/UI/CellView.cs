@@ -16,6 +16,7 @@ namespace Sudoku.UI
         [SerializeField] private Button _button;
         [SerializeField] private Color _playerColor = Color.blue;
         [SerializeField] private Color _givenColor = Color.black;
+        private ColorTheme _theme;
 
         private int _row;
         private int _column;
@@ -51,16 +52,8 @@ namespace Sudoku.UI
         /// </summary>
         public void SetValue(int value)
         {
-            if (value == 0)
-            {
-                _valueText.text = "";
-            }
-            else
-            {
-                _valueText.text = value.ToString();
-            }
-
-            _valueText.color = _playerColor;
+            _valueText.text = value == 0 ? "" : value.ToString();
+            _valueText.color = _theme.textPlayerColor;
         }
 
         /// <summary>
@@ -68,7 +61,7 @@ namespace Sudoku.UI
         /// </summary>
         public void SetSelected(bool isSelected)
         {
-            _background.color = isSelected ? Color.cyan : Color.white;
+            _background.color = isSelected ? _theme.cellSelectedColor : (_button.interactable ? _theme.cellNormalColor : _theme.cellFixedColor);
         }
 
         private void HandleClick()
@@ -82,25 +75,21 @@ namespace Sudoku.UI
         public void LockCell()
         {
             _button.interactable = false;
-            _valueText.color = _givenColor;
+            _valueText.color = _theme.textGivenColor;
+            _background.color = _theme.cellNormalColor;
         }
 
         public void UnlockCell()
         {
             _button.interactable = true;
-            _valueText.color = _playerColor; //return blue color for the player
+            _valueText.color = _theme.textPlayerColor;
+            //_background.color = _theme.cellNormalColor;
         }
 
         public void SetError(bool hasError)
         {
-            if (hasError == true)
-            {
-                _background.color = Color.red;
-            }
-            else
-            {
-                _background.color = Color.white;
-            }
+            //_background.color = hasError ? _theme.cellErrorColor : (_button.interactable ? _theme.cellNormalColor : _theme.cellFixedColor);
+            _valueText.color = hasError ? _theme.textErrorColor : _theme.textPlayerColor;
         }
 
         public void SetNote(int number, bool isActive)
@@ -119,6 +108,11 @@ namespace Sudoku.UI
             {
                 noteText.text = "";
             }
+        }
+
+        public void SetTheme(ColorTheme theme)
+        {
+            _theme = theme;
         }
     }
 }
