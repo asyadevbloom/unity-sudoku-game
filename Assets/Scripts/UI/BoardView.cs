@@ -1,8 +1,6 @@
 using Sudoku.Core;
-using TMPro;
-using UnityEditor.Tilemaps;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
+using System.Collections.Generic;
 
 namespace Sudoku.UI
 {
@@ -22,6 +20,7 @@ namespace Sudoku.UI
         private CellView[,] _cellViews = new CellView[SudokuBoard.Size, SudokuBoard.Size];
         private int[,] _initialPuzzle;
         private SudokuBoard _solution;
+        private Stack<(int row, int column, int previousValue)> _history = new();
 
         private void Start()
         {
@@ -85,6 +84,8 @@ namespace Sudoku.UI
         {
             if (_selectedCell != null)
             {
+                _history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
+                
                 // assign a value to a cell on the board
                 _board.SetCell(_selectedCell.Row, _selectedCell.Column, value);
                 //set the number to display
@@ -148,14 +149,7 @@ namespace Sudoku.UI
 
         private bool CheckWin()
         {
-            for (int row = 0; row < SudokuBoard.Size; row++)
-            {
-                for (int column = 0; column < SudokuBoard.Size; column++)
-                {
-                    if (_board.GetCell(row, column) == 0) return false;
-                }
-            }
-
+            if (GetEmptyCells().Count != 0) return false;
             return _board.IsConsistent();
         }
 
@@ -163,6 +157,8 @@ namespace Sudoku.UI
         {
             if (_selectedCell != null)
             {
+                _history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
+
                 _board.SetCell(_selectedCell.Row, _selectedCell.Column, 0);
                 _selectedCell.SetValue(0);
                 _selectedCell.SetError(false);
@@ -229,6 +225,74 @@ namespace Sudoku.UI
                     }
                 }
             }
+        }
+
+        public void UseHint()
+        {
+            if (CheckWin())
+            {
+                _timer.StopTimer();
+                _winPanel.SetActive(true);
+                return;
+            }
+
+            if (_selectedCell != null)
+            {
+                int correctValue = _solution.GetCell(_selectedCell.Row, _selectedCell.Column);
+                _board.SetCell(_selectedCell.Row, _selectedCell.Column, correctValue);
+                _selectedCell.SetValue(correctValue);
+                _selectedCell.LockCell();
+                _selectedCell.SetError(false);
+                _selectedCell = null;
+            }
+            else
+            {
+                var emptyCells = GetEmptyCells();
+
+                if (emptyCells.Count == 0) return;
+
+                int randomIndex = Random.Range(0, emptyCells.Count);
+                var randomCell = emptyCells[randomIndex];
+
+                int correctValue = _solution.GetCell(randomCell.row, randomCell.column);
+
+                _board.SetCell(randomCell.row, randomCell.column, correctValue);
+
+                _cellViews[randomCell.row, randomCell.column].SetValue(correctValue);
+                _cellViews[randomCell.row, randomCell.column].LockCell();
+            }
+        }
+
+        private List<(int row, int column)> GetEmptyCells()
+        {
+            var emptyCells = new List<(int row, int column)>();
+
+            for (int row = 0; row < SudokuBoard.Size; row++)
+            {
+                for (int column = 0; column < SudokuBoard.Size; column++)
+                {
+                    if (_board.GetCell(row, column) == 0)
+                    {
+                        emptyCells.Add((row, column));
+                    }
+                }
+            }
+
+            return emptyCells;
+        }
+
+        public void Undo()
+        {
+            if (_history.Count == 0) return;
+
+            var lastMove = _history.Pop();
+            _board.SetCell(lastMove.row, lastMove.column, lastMove.previousValue);
+            _cellViews[lastMove.row, lastMove.column].SetValue(lastMove.previousValue);
+            if (lastMove.previousValue == 0)
+            {
+                _cellViews[lastMove.row, lastMove.column].UnlockCell();
+            }
+            _cellViews[lastMove.row, lastMove.column].SetError(false);
         }
     }
 }
