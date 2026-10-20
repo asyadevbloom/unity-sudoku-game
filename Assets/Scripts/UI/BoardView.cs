@@ -14,6 +14,7 @@ namespace Sudoku.UI
     {
         [SerializeField] private CellView _cellPrefab;
         [SerializeField] private GameObject _winPanel;
+        [SerializeField] private GameTimer _timer;
 
         private SudokuGenerator _generator;
         private SudokuBoard _board;
@@ -98,6 +99,7 @@ namespace Sudoku.UI
 
                 if (CheckWin())
                 {
+                    _timer.StopTimer();
                     _winPanel.SetActive(true);
                 }
             }
@@ -169,6 +171,7 @@ namespace Sudoku.UI
 
         public void RestartBoard()
         {
+            _timer.ResetTimer();
             _board.LoadFrom(_initialPuzzle);
 
             for (int row = 0; row < SudokuBoard.Size; row++)
