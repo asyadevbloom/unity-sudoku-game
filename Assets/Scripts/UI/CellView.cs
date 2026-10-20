@@ -11,6 +11,7 @@ namespace Sudoku.UI
     public class CellView : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _valueText;
+        [SerializeField] private TextMeshProUGUI[] _noteTexts;
         [SerializeField] private Image _background;
         [SerializeField] private Button _button;
         [SerializeField] private Color _playerColor = Color.blue;
@@ -90,7 +91,7 @@ namespace Sudoku.UI
             _valueText.color = _playerColor; //return blue color for the player
         }
 
-        public void SetError (bool hasError)
+        public void SetError(bool hasError)
         {
             if (hasError == true)
             {
@@ -99,6 +100,24 @@ namespace Sudoku.UI
             else
             {
                 _background.color = Color.white;
+            }
+        }
+
+        public void SetNote(int number, bool isActive)
+        {
+            int index = number - 1;
+
+            if (index >= 0 && index < _noteTexts.Length)
+            {
+                _noteTexts[index].text = isActive ? number.ToString() : "";
+            }
+        }
+
+        public void ClearAllNotes()
+        {
+            foreach (var noteText in _noteTexts)
+            {
+                noteText.text = "";
             }
         }
     }

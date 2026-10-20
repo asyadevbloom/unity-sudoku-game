@@ -21,6 +21,8 @@ namespace Sudoku.UI
         private int[,] _initialPuzzle;
         private SudokuBoard _solution;
         private Stack<(int row, int column, int previousValue)> _history = new();
+        private bool _isNoteMode = false;
+        private bool[,,] _notes = new bool[SudokuBoard.Size, SudokuBoard.Size, 9];
 
         private void Start()
         {
@@ -80,10 +82,29 @@ namespace Sudoku.UI
             _selectedCell.SetSelected(true);
         }
 
+        public void ToggleNoteMode()
+        {
+            _isNoteMode = !_isNoteMode;
+        }
+
         public void TrySetValue(int value)
         {
             if (_selectedCell != null)
             {
+                if (_isNoteMode)
+                {
+                    int row = _selectedCell.Row;
+                    int column = _selectedCell.Column;
+
+                    if (_board.GetCell(row, column) != 0) return;
+
+                    _notes[row, column, value -1] = !_notes[row, column, value - 1];
+
+                    _selectedCell.SetNote(value, _notes[row, column, value - 1]);
+
+                    return;
+                }
+
                 _history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
                 
                 // assign a value to a cell on the board
@@ -91,8 +112,11 @@ namespace Sudoku.UI
                 //set the number to display
                 _selectedCell.SetValue(value);
 
-                //bool isError = HasConflict(_selectedCell.Row, _selectedCell.Column, value);
-                //_selectedCell.SetError(isError);
+                _selectedCell.ClearAllNotes();
+                for (int i = 0; i < 9; i++)
+                {
+                    _notes[_selectedCell.Row, _selectedCell.Column, i] = false;
+                }
 
                 int correctValue = _solution.GetCell(_selectedCell.Row, _selectedCell.Column);
                 bool isError = (value != 0 && value != correctValue);
