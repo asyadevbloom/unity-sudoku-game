@@ -349,6 +349,7 @@ MonoBehaviour:
   _winPanel: {fileID: 1022341939}
   _timer: {fileID: 1972738099}
   _theme: {fileID: 11400000, guid: c93f8b864c684524093d78a7377d3776, type: 2}
+  _notesButton: {fileID: 809651211}
 --- !u!114 &148935971
 MonoBehaviour:
   m_ObjectHideFlags: 0

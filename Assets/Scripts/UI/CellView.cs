@@ -114,5 +114,10 @@ namespace Sudoku.UI
         {
             _theme = theme;
         }
+
+        public void SetGivenColor()
+        {
+            _valueText.color = _theme.textGivenColor;
+        }
     }
 }

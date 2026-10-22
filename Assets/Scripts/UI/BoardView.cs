@@ -14,6 +14,7 @@ namespace Sudoku.UI
         [SerializeField] private GameObject _winPanel;
         [SerializeField] private GameTimer _timer;
         [SerializeField] private ColorTheme _theme;
+        [SerializeField] private NotesButton _notesButton;
 
         private SudokuGenerator _generator;
         private SudokuBoard _board;
@@ -23,6 +24,7 @@ namespace Sudoku.UI
         private SudokuBoard _solution;
         private Stack<(int row, int column, int previousValue)> _history = new();
         private bool _isNoteMode = false;
+        private bool _isGameOver = false;
         private bool[,,] _notes = new bool[SudokuBoard.Size, SudokuBoard.Size, 9];
 
         private void Start()
@@ -93,6 +95,8 @@ namespace Sudoku.UI
 
         public void TrySetValue(int value)
         {
+            if (_isGameOver) return;
+
             if (_selectedCell != null)
             {
                 if (_isNoteMode)
@@ -126,11 +130,7 @@ namespace Sudoku.UI
                 bool isError = (value != 0 && value != correctValue);
                 _selectedCell.SetError(isError);
 
-                if (CheckWin())
-                {
-                    _timer.StopTimer();
-                    _winPanel.SetActive(true);
-                }
+                CheckAndHandleWin();
             } 
         }
 
@@ -194,6 +194,10 @@ namespace Sudoku.UI
         public void RestartBoard()
         {
             _timer.ResetTimer();
+            _isGameOver = false;
+
+            if (_notesButton != null) _notesButton.ResetNotesMode();
+
             _board.LoadFrom(_initialPuzzle);
 
             for (int row = 0; row < SudokuBoard.Size; row++)
@@ -212,8 +216,16 @@ namespace Sudoku.UI
                         _cellViews[row, column].UnlockCell();
                     }
 
+                    _cellViews[row, column].ClearAllNotes();
+
+                    for(int i = 0; i < 9; i++)
+                    {
+                        _notes[row, column, i] = false;
+                    }
+
                     _cellViews[row, column].SetError(false);
                     _cellViews[row, column].SetSelected(false);
+                    _cellViews[row, column].SetGivenColor();
                 }
             }
         }
@@ -288,6 +300,8 @@ namespace Sudoku.UI
                 _cellViews[randomCell.row, randomCell.column].SetValue(correctValue);
                 _cellViews[randomCell.row, randomCell.column].LockCell();
             }
+
+            CheckAndHandleWin();
         }
 
         private List<(int row, int column)> GetEmptyCells()
@@ -315,11 +329,29 @@ namespace Sudoku.UI
             var lastMove = _history.Pop();
             _board.SetCell(lastMove.row, lastMove.column, lastMove.previousValue);
             _cellViews[lastMove.row, lastMove.column].SetValue(lastMove.previousValue);
+            
             if (lastMove.previousValue == 0)
             {
                 _cellViews[lastMove.row, lastMove.column].UnlockCell();
             }
-            _cellViews[lastMove.row, lastMove.column].SetError(false);
+
+            bool isError = false;
+            if (lastMove.previousValue != 0)
+            {
+                int correctValue = _solution.GetCell(lastMove.row, lastMove.column);
+                isError = (lastMove.previousValue != correctValue);
+            }
+            _cellViews[lastMove.row, lastMove.column].SetError(isError);
+        }
+
+        private void CheckAndHandleWin()
+        {
+            if (CheckWin())
+            {
+                _isGameOver = true;
+                _timer.StopTimer();
+                _winPanel.SetActive(true);
+            }
         }
     }
 }
