@@ -188,6 +188,12 @@ namespace Sudoku.UI
                 _board.SetCell(_selectedCell.Row, _selectedCell.Column, 0);
                 _selectedCell.SetValue(0);
                 _selectedCell.SetError(false);
+
+                _selectedCell.ClearAllNotes();
+                for (int i = 0; i < 9; i++)
+                {
+                    _notes[_selectedCell.Row, _selectedCell.Column, i] = false;
+                }
             }
         }
 
@@ -299,6 +305,10 @@ namespace Sudoku.UI
 
                 _cellViews[randomCell.row, randomCell.column].SetValue(correctValue);
                 _cellViews[randomCell.row, randomCell.column].LockCell();
+
+                _cellViews[randomCell.row, randomCell.column].SetPlayerColor();
+                _cellViews[randomCell.row, randomCell.column].SetSelected(false);
+                _selectedCell = null;
             }
 
             CheckAndHandleWin();
@@ -329,6 +339,12 @@ namespace Sudoku.UI
             var lastMove = _history.Pop();
             _board.SetCell(lastMove.row, lastMove.column, lastMove.previousValue);
             _cellViews[lastMove.row, lastMove.column].SetValue(lastMove.previousValue);
+
+            _cellViews[lastMove.row, lastMove.column].ClearAllNotes();
+            for (int i = 0; i < 9; i++)
+            {
+                _notes[lastMove.row, lastMove.column, i] = false;
+            }
             
             if (lastMove.previousValue == 0)
             {
