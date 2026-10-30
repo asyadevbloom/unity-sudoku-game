@@ -22,7 +22,8 @@ namespace Sudoku.UI
         private CellView[,] _cellViews = new CellView[SudokuBoard.Size, SudokuBoard.Size];
         private int[,] _initialPuzzle;
         private SudokuBoard _solution;
-        private Stack<(int row, int column, int previousValue)> _history = new();
+        //private Stack<(int row, int column, int previousValue)> _history = new();
+        private Stack<(int[,] boardState, bool[,,] notesState)> _history = new Stack<(int[,], bool[,,])>();
         private bool _isNoteMode = false;
         private bool _isGameOver = false;
         private bool[,,] _notes = new bool[SudokuBoard.Size, SudokuBoard.Size, 9];
@@ -99,6 +100,8 @@ namespace Sudoku.UI
 
             if (_selectedCell != null)
             {
+                SaveStateToHistory();
+                
                 if (_isNoteMode)
                 {
                     int row = _selectedCell.Row;
@@ -113,7 +116,7 @@ namespace Sudoku.UI
                     return;
                 }
 
-                _history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
+                //_history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
                 
                 // assign a value to a cell on the board
                 _board.SetCell(_selectedCell.Row, _selectedCell.Column, value);
@@ -183,7 +186,9 @@ namespace Sudoku.UI
         {
             if (_selectedCell != null)
             {
-                _history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
+                SaveStateToHistory();
+
+                //_history.Push((_selectedCell.Row, _selectedCell.Column, _board.GetCell(_selectedCell.Row, _selectedCell.Column)));
 
                 _board.SetCell(_selectedCell.Row, _selectedCell.Column, 0);
                 _selectedCell.SetValue(0);
@@ -332,32 +337,111 @@ namespace Sudoku.UI
             return emptyCells;
         }
 
+        //public void Undo()
+        //{
+        //    if (_history.Count == 0) return;
+
+        //    var lastMove = _history.Pop();
+        //    _board.SetCell(lastMove.row, lastMove.column, lastMove.previousValue);
+        //    _cellViews[lastMove.row, lastMove.column].SetValue(lastMove.previousValue);
+
+        //    _cellViews[lastMove.row, lastMove.column].ClearAllNotes();
+        //    for (int i = 0; i < 9; i++)
+        //    {
+        //        _notes[lastMove.row, lastMove.column, i] = false;
+        //    }
+
+        //    if (lastMove.previousValue == 0)
+        //    {
+        //        _cellViews[lastMove.row, lastMove.column].UnlockCell();
+        //    }
+
+        //    bool isError = false;
+        //    if (lastMove.previousValue != 0)
+        //    {
+        //        int correctValue = _solution.GetCell(lastMove.row, lastMove.column);
+        //        isError = (lastMove.previousValue != correctValue);
+        //    }
+        //    _cellViews[lastMove.row, lastMove.column].SetError(isError);
+        //}
+
         public void Undo()
         {
-            if (_history.Count == 0) return;
+            if (_history.Count == 0 || _isGameOver) return;
 
-            var lastMove = _history.Pop();
-            _board.SetCell(lastMove.row, lastMove.column, lastMove.previousValue);
-            _cellViews[lastMove.row, lastMove.column].SetValue(lastMove.previousValue);
+            var lastState = _history.Pop();
+            _board.LoadFrom(lastState.boardState);
+            _notes = lastState.notesState;
 
-            _cellViews[lastMove.row, lastMove.column].ClearAllNotes();
-            for (int i = 0; i < 9; i++)
+            //for (int row = 0; row < SudokuBoard.Size; row++)
+            //{
+            //    for (int column = 0; column < SudokuBoard.Size; column++)
+            //    {
+            //        int value = _board.GetCell(row, column);
+            //        _cellViews[row, column].SetValue(value);
+
+            //        for (int i = 0; i < 9; i++)
+            //        {
+            //            _cellViews[row, column].SetNote(i + 1, _notes[row, column, i]);
+            //        }
+
+            //        if (_initialPuzzle[row, column] != 0)
+            //        {
+            //            _cellViews[row, column].LockCell();
+            //            _cellViews[row, column].SetGivenColor();
+            //        }
+            //        else
+            //        {
+            //            _cellViews[row, column].UnlockCell();
+            //        }
+
+            //        _cellViews[row, column].SetError(false);
+            //    }
+            //}
+
+            for (int row = 0; row < SudokuBoard.Size; row++)
             {
-                _notes[lastMove.row, lastMove.column, i] = false;
-            }
-            
-            if (lastMove.previousValue == 0)
-            {
-                _cellViews[lastMove.row, lastMove.column].UnlockCell();
+                for (int column = 0; column < SudokuBoard.Size; column++)
+                {
+                    int value = _board.GetCell(row, column);
+                    
+                    _cellViews[row, column].SetValue(value);
+
+                    if (row == 0 && column == 0)
+                    {
+                        Debug.Log($"--- Undo: update 0,0. Value: {value}. before: {_initialPuzzle[row, column]} ---");
+                    }
+
+                    if (_initialPuzzle[row, column] != 0)
+                    {
+                        _cellViews[row, column].LockCell();
+                    }
+                    else
+                    {
+                        _cellViews[row, column].UnlockCell();
+                    }
+
+                    //_cellViews[row, column].SetValue(value);
+
+                    for (int i = 0; i < 9; i++)
+                    {
+                        _cellViews[row, column].SetNote(i + 1, _notes[row, column, i]);
+                    }
+
+                    bool isError = false;
+                    if (value != 0 && value != _solution.GetCell(row, column))
+                    {
+                        isError = true;
+                    }
+
+                    _cellViews[row, column].SetError(isError);
+                }
             }
 
-            bool isError = false;
-            if (lastMove.previousValue != 0)
+            if (_selectedCell != null)
             {
-                int correctValue = _solution.GetCell(lastMove.row, lastMove.column);
-                isError = (lastMove.previousValue != correctValue);
+                _selectedCell.SetSelected(true);
             }
-            _cellViews[lastMove.row, lastMove.column].SetError(isError);
         }
 
         private void CheckAndHandleWin()
@@ -368,6 +452,16 @@ namespace Sudoku.UI
                 _timer.StopTimer();
                 _winPanel.SetActive(true);
             }
+        }
+
+        private void SaveStateToHistory()
+        {
+            int[,] boardCopy = _board.Clone();
+
+            bool[,,] notesCopy = new bool[SudokuBoard.Size, SudokuBoard.Size, 9];
+            System.Array.Copy(_notes, notesCopy, _notes.Length);
+
+            _history.Push((boardCopy, notesCopy));
         }
     }
 }

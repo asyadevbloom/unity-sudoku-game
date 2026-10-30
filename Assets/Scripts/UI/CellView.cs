@@ -53,7 +53,13 @@ namespace Sudoku.UI
         public void SetValue(int value)
         {
             _valueText.text = value == 0 ? "" : value.ToString();
-            _valueText.color = _theme.textPlayerColor;
+            Debug.Log($"SetValue({value}) on {_row},{_column}. Current color: {_valueText.color}");
+
+            if (_button.interactable)
+            {
+                _valueText.color = _theme.textPlayerColor;
+            }
+            //_valueText.color = _theme.textPlayerColor;
         }
 
         /// <summary>
@@ -77,6 +83,7 @@ namespace Sudoku.UI
             _button.interactable = false;
             _valueText.color = _theme.textGivenColor;
             _background.color = _theme.cellNormalColor;
+            Debug.Log($"LockCell on {_row},{_column}. Color became: {_valueText.color}");
         }
 
         public void UnlockCell()
@@ -88,8 +95,20 @@ namespace Sudoku.UI
 
         public void SetError(bool hasError)
         {
+            Debug.Log($"SetError({hasError}) on {_row},{_column}. Color before: {_valueText.color}");
             //_background.color = hasError ? _theme.cellErrorColor : (_button.interactable ? _theme.cellNormalColor : _theme.cellFixedColor);
-            _valueText.color = hasError ? _theme.textErrorColor : _theme.textPlayerColor;
+            //_valueText.color = hasError ? _theme.textErrorColor : _theme.textPlayerColor;
+
+            if (hasError)
+            {
+                _valueText.color = _theme.textErrorColor;
+            }
+            else if (_button.interactable)
+            {
+                _valueText.color = _theme.textPlayerColor;
+            }
+
+            Debug.Log($"SetError({hasError}) on {_row},{_column}. Color after: {_valueText.color}");
         }
 
         public void SetNote(int number, bool isActive)
